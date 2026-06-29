@@ -1,0 +1,78 @@
+PARAS=39 TABLES=1
+P0: (empty)
+P1 [88 chars]:
+  L0: 伍孝轩
+  L1: 手机号：13727480563|邮箱：3110337564@qq.com | 微信号：wxx13798608302 
+  L2: 28届本科|Golang|AI应用/AIGC工作流
+P2: (empty)
+P3 [32 chars]:
+  L0: 2025年ACM/CCPC福建省大学生程序设计竞赛全国邀请赛金奖
+P4 [34 chars]:
+  L0: 2025年ACM/CCPC国际大学生程序设计竞赛武汉站全国邀请赛银奖
+P5 [34 chars]:
+  L0: 2026年ACM/CCPC中国大学生程序设计竞赛广西站全国邀请赛银奖
+P6 [34 chars]:
+  L0: 2025年ACM/CCPC中国大学生程序设计竞赛东北站全国邀请赛铜奖
+P7 [30 chars]:
+  L0: 2025年ACM/CCPC广东省大学生程序设计竞赛邀请赛铜奖
+P8 [30 chars]:
+  L0: 2026年ACM/CCPC广东省大学生程序设计竞赛邀请赛铜奖
+P9 [13 chars]:
+  L0: 2025年蓝桥杯全国三等奖
+P10 [20 chars]:
+  L0: 2026年团体程序设计竞赛团队全国三等奖
+P11 [20 chars]:
+  L0: 2026年团体程序设计竞赛个人全国三等奖
+P12 [20 chars]:
+  L0: 2025年团体程序设计竞赛团队全国三等奖
+P13 [4 chars]:
+  L0: 项目经历
+P14 [47 chars]:
+  L0: FlowAgent（AI微电影/短视频全自动生产Agent）	独立开发	2025年05月-至今
+P15 [182 chars]:
+  L0: 该项目是基于 Go 自研的全链路 AIGC Agent，面向 网文连载 → 分镜 → AI 音画合成 → 合规发布 场景，将扩写、分镜、制片、合规、发布拆为可恢复、可验收的阶段流水线；支持 CLI 与 Desktop 双入口，产物落盘 runs/<run_id>/artifacts/，可通过 flowagent resume --from-stage 断点续跑。
+P16 [31 chars]:
+  L0: 项目地址：flow-agent（本地 monorepo 项目）
+P17 [5 chars]:
+  L0: 主要工作：
+P18 [41 chars]:
+  L0: 1.工作流引擎：YAML 编排全阶段流水线，阶段门禁与多 Provider 切换。
+P19 [44 chars]:
+  L0: 2.分镜 Agent：扩写首镜为结构化 JSON，Skills 注入与分镜自动审查修复。
+P20 [48 chars]:
+  L0: 3.多模态制片：TTS+文生图+i2v+FFmpeg 合成，Provider 故障自动降级兜底。
+P21 [43 chars]:
+  L0: 4.视频质量优化：physics 约束与 PropLock，修复道具穿模与跨镜一致性。
+P22 [45 chars]:
+  L0: 5.连载记忆与成本：SQLite FTS 知识库与 cost-ledger 用量统计归档。
+P23 [35 chars]:
+  L0: 6.工程化交付：CLI/Desktop 双入口，核心模块单元测试覆盖。
+P24: (empty)
+P25: (empty)
+P26: (empty)
+P27 [99 chars]:
+  L0: 1. 熟练使用 Go 进行后端与 Agent 系统开发，掌握 goroutine 并发、errgroup 并行任务、接口抽象与模块化设计；熟悉数据结构与算法，有多项 ACM/ICPC 竞赛获奖经历。
+P28 [83 chars]:
+  L0: 2. 熟悉 LLM 应用工程化：Prompt 分层与调优、结构化 JSON 输出、按阶段注入 Skill Reference；了解 RAG 思路与产物驱动工作流设计。
+P29 [100 chars]:
+  L0: 3. 有大模型与 AIGC 多模态实践经验：DeepSeek、阿里云百炼 DashScope、火山方舟 Seedream/Seedance；熟悉 TTS、文生图、图生视频与 FFmpeg 音视频合成。
+P30 [86 chars]:
+  L0: 4. 熟悉 YAML 工作流、阶段状态机、Provider 插件化与降级容错设计；了解 SQLite 存储与全文检索；能使用 Vue3 搭建 Desktop Web UI。
+P31 [26 chars]:
+  L0: 5. 熟悉并发编程，channel，条件变量，协程。
+P32 [46 chars]:
+  L0: 6. 熟悉 Linux 和 Git 的基本命令，能够进行独立部署服务器和 Git 协同开发。
+P33 [43 chars]:
+  L0: 7. 熟悉数据结构和算法，掌握栈队列、树、图、搜索、二分、回溯、分治、动态规划等算法。
+P34 [20 chars]:
+  L0: 8. 熟悉计算机网络、操作系统主要知识。
+P35 [51 chars]:
+  L0: 9. 热爱新兴事务，抗压能力强，擅长使用 AI 进行开发，如 mcp，skill，agent，a2a。
+P36 [4 chars]:
+  L0: 教育经历
+P37 [27 chars]:
+  L0: 东莞理工学院（一本）	2024年9月-2028年6月	
+P38 [8 chars]:
+  L0: 大数据技术与应用
+TABLE0:
+  R0: ['专业技能', '']

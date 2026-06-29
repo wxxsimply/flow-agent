@@ -1,0 +1,195 @@
+# FlowAgent NovelShortDouyinFlow — 短篇连载 → 竖屏视频 → 抖音发布
+# 用法: flowagent run novel-short-douyin --series ceo-rebirth-001 --episode 12
+
+name: novel-short-douyin
+version: "1.0"
+description: 规划钩子 → 流式写作 → 一致性校验 → 分镜 → 合成 → 合规 → 发布 → 数据回流
+
+domain: content_production
+triggers:
+  - type: cli
+    command: flowagent run novel-short-douyin
+  - type: schedule
+    cron: "0 8 * * *"
+    timezone: Asia/Shanghai
+    optional: true
+
+context:
+  vault_profile: series_default
+  target_duration_sec: 90
+  stack_profile: video-native-short
+  continuity_strictness: strict
+  publish_mode: draft
+
+budget:
+  max_tool_steps: 120
+  max_continuity_retries: 3
+  token_soft_limit: 200000
+  cost_budget_cny: 50
+
+stream:
+  chunk_max_tokens: 600
+  scene_max_chars: 1200
+  stop_on_gate_fail: true
+
+stages:
+  - id: plan
+    agent: planner
+    hooks:
+      - before_plan: [inject_l0_series_bible, inject_publish_metrics]
+    artifacts:
+      required:
+        - path: artifacts/episode-brief.md
+        - path: artifacts/hook-plan.json
+          schema: hook_plan_v1
+    gates:
+      - id: outline_confirmed
+        type: human
+        skippable: false
+
+  - id: write
+    agent: writer
+    depends_on: [plan]
+    mode: stream
+    hooks:
+      - before_write: [inject_l1_episode_brief]
+      - on_scene_complete: [append_chapter_part, update_scene_summary]
+      - after_write: [merge_chapter_parts]
+    artifacts:
+      required:
+        - path: artifacts/chapter.md
+      optional:
+        - path: artifacts/chapter.parts/
+    gates:
+      - id: length_in_range
+        type: automatic
+        condition: "artifacts.chapter.md.char_count within episode_brief.length_range"
+
+  - id: continuity
+    agent: continuity_keeper
+    depends_on: [write]
+    hooks:
+      - before_continuity: [inject_l2_foreshadows_if_needed]
+    artifacts:
+      required:
+        - path: artifacts/continuity-report.json
+          schema: continuity_report_v1
+      optional:
+        - path: artifacts/character-state.patch.json
+    gates:
+      - id: continuity_passed
+        type: automatic
+        condition: "artifacts.continuity-report.json.critical_count == 0"
+
+  - id: storyboard
+    agent: storyboarder
+    depends_on: [continuity]
+    artifacts:
+      required:
+        - path: artifacts/storyboard.json
+          schema: storyboard_v1
+        - path: artifacts/narration.ssml
+    gates:
+      - id: duration_ok
+        type: automatic
+        condition: "abs(storyboard.total_duration_sec - context.target_duration_sec) <= 3"
+
+  - id: produce
+    agent: producer
+    depends_on: [storyboard]
+    sandbox:
+      allowed_tools:
+        - tts_synthesize
+        - image_generate
+        - ffmpeg_compose
+        - write_artifact
+    artifacts:
+      required:
+        - path: artifacts/timeline.json
+        - path: artifacts/master.mp4
+        - path: artifacts/sync-report.json
+      optional:
+        - path: artifacts/assets/
+        - path: artifacts/audio_segments.json
+        - path: artifacts/subtitles.ass
+    gates:
+      - id: av_sync_ok
+        type: automatic
+        condition: "artifacts.sync-report.json.max_drift_sec <= 0.5"
+
+  - id: comply
+    agent: compliance
+    depends_on: [produce]
+    artifacts:
+      required:
+        - path: artifacts/compliance-report.json
+          schema: compliance_report_v1
+    gates:
+      - id: no_block_issues
+        type: automatic
+        condition: "artifacts.compliance-report.json.blocked == false"
+
+  - id: publish
+    agent: publisher
+    depends_on: [comply]
+    context:
+      platform_targets: [douyin]
+    artifacts:
+      required:
+        - path: artifacts/publish-pack.json
+          schema: publish_pack_v1
+      optional:
+        - path: artifacts/platform-draft-ids.json
+    gates:
+      - id: final_cut_approved
+        type: human
+        skippable: false
+      - id: publish_authorized
+        type: human
+        skippable: false
+
+  - id: learn
+    agent: analyst
+    depends_on: [publish]
+    hooks:
+      - after_learn: [archive_episode_to_series_vault]
+    artifacts:
+      required:
+        - path: artifacts/metrics-snapshot.json
+        - path: artifacts/next-episode-hints.md
+    gates: []
+
+# 标准档搭配见 docs/NOVEL_STREAM_VIDEO_PUBLISH_PROPOSAL.md §9
+plugins:
+  - name: stack_standard_tier
+    config: config/stacks/video-native-short.yaml
+    optional: true
+  - name: series_vault
+    provides:
+      - inject_l0_series_bible
+      - inject_l1_episode_brief
+      - inject_l2_foreshadows_if_needed
+      - inject_publish_metrics
+      - archive_episode_to_series_vault
+  - name: stream_supervisor
+    provides:
+      - append_chapter_part
+      - merge_chapter_parts
+      - update_scene_summary
+  - name: tts_volcano
+    provides: [tts_synthesize]
+  - name: image_wanx
+    provides: [image_generate]
+  - name: video_kling
+    provides: [kling_image_to_video]
+    optional: true
+  - name: ffmpeg_compose
+    provides: [ffmpeg_compose]
+  - name: douyin_open
+    provides: [douyin_create_draft]
+    optional: true
+
+observability:
+  trace: true
+  run_store: runs/{run_id}/
+  cost_ledger: runs/{run_id}/cost-ledger.json

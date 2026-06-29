@@ -1,0 +1,54 @@
+# =============================================================================
+# FlowAgent API 密钥配置
+# =============================================================================
+#   copy config\providers.local.yaml.example config\providers.local.yaml
+#   flowagent config check
+#
+# 说明：dashscope 字段 = 阿里云【百炼】控制台申请的 Key（不是旧站 dashscope.aliyun.com）
+#       控制台：https://bailian.console.aliyun.com/
+# =============================================================================
+
+deepseek:
+  api_key: "sk-你的DeepSeek密钥"
+  base_url: https://api.deepseek.com
+
+# 阿里云百炼（通义 Qwen + 万相出图）— 阶段 C/E 需要
+# 重要：region 必须与百炼控制台创建 API Key 时选择的地域一致！
+# 若北京端点不可用，改为 region: intl 后执行 flowagent config test-api
+dashscope:
+  api_key: "sk-你的百炼API密钥"
+  region: cn-beijing
+  # cn-beijing → https://dashscope.aliyuncs.com/compatible-mode/v1
+  # intl       → https://dashscope-intl.aliyuncs.com/compatible-mode/v1  （国际/新加坡控制台）
+  # us         → https://dashscope-us.aliyuncs.com/compatible-mode/v1
+  # hk         → https://cn-hongkong.dashscope.aliyuncs.com/compatible-mode/v1
+  base_url: ""
+
+volcengine:
+  # 方舟 API Key（出图 Seedream / 视频 Seedance），在 https://console.volcengine.com/ark 创建
+  api_key: "ark-你的方舟API密钥"
+  base_url: "https://ark.cn-beijing.volces.com/api/v3"
+  # 旁白 TTS 仅走火山 OpenSpeech v3（默认 seed-tts-2.0 / 语音合成2.0）
+  # 控制台：https://console.volcengine.com/speech/service → 开通「语音合成2.0」
+  # 旧版应用：https://console.volcengine.com/speech/app → AppID + Access Token
+  # 诊断：flowagent config test-volcengine-tts
+  app_id: "你的AppID"
+  access_key: "语音应用 Access Token（OpenSpeech Token，非 ark-）"
+  secret_key: "你的SecretKey"
+
+kling:
+  access_key: "你的可灵 Access Key"
+  secret_key: "你的可灵 Secret Key"
+  base_url: "https://api.klingai.com"   # 国际账号；国内控制台 Key 用 https://api-beijing.klingai.com
+
+# Google Gemini API（Veo 3.1 Lite i2v，micro-movie-veo-lite stack）
+# 控制台：https://aistudio.google.com/apikey
+gemini:
+  api_key: "你的GeminiAPI密钥"
+  base_url: ""   # 默认 https://generativelanguage.googleapis.com/v1beta
+
+# OpenAI API（Sora 2 Videos API，micro-movie-sora stack）
+# 控制台：https://platform.openai.com/api-keys
+openai:
+  api_key: "sk-你的OpenAI密钥"
+  base_url: ""   # 默认 https://api.openai.com/v1

@@ -1,0 +1,100 @@
+# flow-agent .gitignore
+# 面向 2G/2核云服务器 Docker 部署：仓库只保留源码与配置模板。
+# 服务器上由 docker compose build 构建；勿提交/勿上传 dist、ffmpeg、node_modules、runs 等大目录。
+
+# --- 密钥与环境（切勿提交）---
+.env
+.env.local
+.env.*.local
+!.env.example
+config/providers.local.yaml
+data/config/providers.local.yaml
+
+# --- 运行时数据（Docker volume ./data:/data）---
+/data/*
+!/data/.gitkeep
+/runs/
+/series/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Go 构建产物 ---
+/bin/
+*.exe
+*.test
+*.out
+coverage.out
+*.prof
+
+# --- 前端（Vite 产物在 web/dist，依赖在 node_modules）---
+node_modules/
+web/ui/node_modules/
+web/dist/
+web/ui/dist/
+*.tsbuildinfo
+
+# --- Python 辅助脚本 ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- 本地大体积分发包（2G 机器勿上传）---
+/dist/
+/ffmpeg/
+*.tar.gz
+*.zip
+
+# --- 媒体与生成物（runs 外散落的大文件）---
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.ncm
+
+# --- 日志与调试 ---
+*.log
+debug-*.log
+internal/**/*.log
+runs/**/*.log
+
+# --- 本地运行产物目录（中文项目名等） ---
+/*-*/
+
+# --- Docker 本地缓存 ---
+.docker/
+
+# --- Cursor：仅提交项目 skills，忽略本地计划/缓存 ---
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Studio 用户偏好（桌面/Web 设置页，可能含 workspace 路径）---
+user-prefs.json
+**/user-prefs.json
+run-registry.json
+
+# --- 临时目录 ---
+/tmp/
+tmp/
+
+# --- 本地 Studio 项目文件夹（title-YYYYMMDD-HHMM，工作区设在仓库内时）---
+*-202[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]
+
+# --- Office / 无关本地文档 ---
+*.docx
+*.doc
+*.xlsx
+*.pptx

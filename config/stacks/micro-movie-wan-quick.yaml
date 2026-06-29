@@ -1,0 +1,98 @@
+# 5 分钟级预览栈 — 跳过三段扩写，4 镜 × 5s i2v，高并行
+# flowagent run micro-movie --plot "..." --stack micro-movie-wan-quick
+# 或 Web UI 选择「极速预览」
+
+name: micro-movie-wan-quick
+version: "1.0"
+description: ~45s 样片；quick assemble + 4 镜单关键帧 flash，目标墙钟约 5 分钟内
+
+target_duration_sec: 45
+cost_budget_cny: 12
+
+llm:
+  planner:
+    provider: deepseek
+    model: deepseek-v4-flash
+  writer:
+    provider: deepseek
+    model: deepseek-v4-flash
+  continuity:
+    provider: deepseek
+    model: deepseek-v4-flash
+  storyboard:
+    provider: deepseek
+    model: deepseek-v4-flash
+  compliance:
+    provider: deepseek
+    model: deepseek-v4-flash
+
+tts:
+  provider: volcengine
+  product: doubao-speech-2.0-emotion
+  voices:
+    narrator: epic_male
+  format: mp3
+  ssml: true
+
+image:
+  provider: bailian
+  model: wan2.6-t2i
+  aspect_ratio: "9:16"
+  resolution: "1080x1920"
+  style_prefix: |
+    [STYLE] 竖屏 9:16，电影感，简洁构图
+    [NEG] 文字、水印、多余手指
+
+assemble:
+  quick_assemble: true
+  llm_review: false
+
+video:
+  enabled: true
+  provider: bailian
+  strategy: image2video
+  model: wan2.6-i2v-flash
+  resolution: "720P"
+  silent_audio: true
+  all_shots: true
+  require_video: true
+  clip_duration_sec: 5
+  max_produce_shots: 4
+  keyframe_mode: single
+  inter_shot_delay_sec: 0
+  chain_shot_keyframes: true
+  max_parallel_shots: 4
+  fast_poll: true
+  motion_prompt_suffix: "，小幅连贯动作，禁止静态定格"
+  wmreward_bon:
+    enabled: false
+
+compose:
+  engine: ffmpeg
+  video_native_only: true
+  clip_crossfade_sec: 0.2
+  subtitle_format: ass
+  subtitle_chars_per_line: 14
+  subtitle_max_lines: 3
+  bgm_enabled: true
+  bgm_library: assets/bgm
+  bgm_volume: 0.2
+
+publish:
+  mode: export_pack
+  platforms:
+    - douyin
+
+unit_prices_cny:
+  llm_input_per_1k_tokens: 0.0014
+  llm_output_per_1k_tokens: 0.0028
+  tts_per_1k_chars: 0.12
+  image_per_shot: 0.20
+  video_per_second: 0.10
+
+cost_targets_cny:
+  llm: [1, 3]
+  tts: [1, 2]
+  image: [1, 2]
+  video: [2, 5]
+  total: [6, 12]

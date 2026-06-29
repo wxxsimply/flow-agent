@@ -1,0 +1,8 @@
+# Douyin platform-sensitive terms (skeleton — extend per your policy).
+# All entries default to block unless prefixed with warn:
+
+block:毒品
+block:枪支
+block:色情
+block:翻墙
+block:代孕

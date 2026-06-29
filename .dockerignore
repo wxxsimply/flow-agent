@@ -1,0 +1,10 @@
+.git
+runs/
+series/
+node_modules/
+web/ui/node_modules/
+dist/
+*.exe
+ffmpeg/
+.env
+config/providers.local.yaml

@@ -1,0 +1,153 @@
+# 微电影一键成片 — 模糊剧情 → 万相动效 + TTS + 字幕
+# 用法: flowagent run micro-movie --plot "..." --stack micro-movie-wan-flash --auto-gate
+# 单镜测试: flowagent test-shot --prompt "..." 
+
+name: micro-movie
+version: "1.0"
+description: 第一镜扩写约3000字 → 自动分镜 → 万相 i2v 合成 → 合规 → 发布包
+
+domain: content_production
+triggers:
+  - type: cli
+    command: flowagent run micro-movie
+
+context:
+  vault_profile: series_default
+  target_duration_sec: 30
+  stack_profile: micro-movie-seedance
+  publish_mode: export
+
+budget:
+  max_tool_steps: 80
+  cost_budget_cny: 5
+
+stages:
+  - id: assemble
+    agent: shot_assembler
+    artifacts:
+      required:
+        - path: artifacts/opening-shot-input.md
+        - path: artifacts/shot-language-brief.md
+        - path: artifacts/shot-language-expand.json
+        - path: artifacts/storyboard.json
+        - path: artifacts/narration.ssml
+    gates:
+      - id: duration_ok
+        type: automatic
+        condition: "abs(storyboard.total_duration_sec - context.target_duration_sec) <= 15"
+      - id: narration_complete_ok
+        type: automatic
+      - id: brief_confirmed
+        type: human
+        skippable: true
+
+  - id: expand
+    agent: plot_expander
+    artifacts:
+      required:
+        - path: artifacts/plot-input.md
+        - path: artifacts/story-spine.json
+    gates: []
+
+  - id: script
+    agent: screenwriter
+    depends_on: [expand]
+    artifacts:
+      required:
+        - path: artifacts/script.json
+        - path: artifacts/script.md
+    gates: []
+
+  - id: character
+    agent: character_designer
+    depends_on: [script]
+    artifacts:
+      optional:
+        - path: artifacts/character-sheets.json
+        - path: artifacts/assets/characters/
+    gates: []
+
+  - id: storyboard
+    agent: storyboarder
+    depends_on: [character]
+    artifacts:
+      required:
+        - path: artifacts/storyboard.json
+        - path: artifacts/narration.ssml
+    gates:
+      - id: duration_ok
+        type: automatic
+        condition: "abs(storyboard.total_duration_sec - context.target_duration_sec) <= 15"
+
+  - id: prop
+    agent: prop_designer
+    depends_on: [storyboard]
+    artifacts:
+      optional:
+        - path: artifacts/prop-sheets.json
+        - path: artifacts/assets/props/
+    gates: []
+
+  - id: produce
+    agent: producer
+    depends_on: [prop]
+    sandbox:
+      allowed_tools:
+        - tts_synthesize
+        - image_generate
+        - ffmpeg_compose
+    artifacts:
+      required:
+        - path: artifacts/timeline.json
+        - path: artifacts/master.mp4
+        - path: artifacts/sync-report.json
+      optional:
+        - path: artifacts/assets/
+        - path: artifacts/subtitles.ass
+    gates:
+      - id: narration_complete_ok
+        type: automatic
+      - id: av_sync_ok
+        type: automatic
+        condition: "artifacts.sync-report.json.max_drift_sec <= 0.5"
+      - id: motion_quality_ok
+        type: automatic
+      - id: audio_duration_ok
+        type: automatic
+      - id: visual_quality_ok
+        type: automatic
+
+  - id: comply
+    agent: compliance
+    depends_on: [produce]
+    artifacts:
+      required:
+        - path: artifacts/compliance-report.json
+    gates:
+      - id: no_block_issues
+        type: automatic
+        condition: "artifacts.compliance-report.json.blocked == false"
+
+  - id: publish
+    agent: publisher
+    depends_on: [comply]
+    artifacts:
+      required:
+        - path: artifacts/publish-pack.json
+    gates:
+      - id: final_cut_approved
+        type: human
+        skippable: true
+      - id: publish_authorized
+        type: human
+        skippable: true
+
+plugins:
+  - name: stack_micro_movie_wan
+    config: config/stacks/micro-movie-wan-flash.yaml
+  - name: video_wan
+    provides: [wan_image_to_video]
+
+observability:
+  trace: true
+  run_store: runs/{run_id}/

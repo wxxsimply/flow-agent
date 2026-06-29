@@ -1,0 +1,125 @@
+# FlowForge DecisionFlow — 个人决策闭环
+# 用法: flowforge run decision --goal "8000元内轻薄本，续航优先"
+
+name: decision
+version: "1.0"
+description: 澄清目标 → 收集来源 → 对比矩阵 → 人工确认 → 执行清单 → 归档
+
+domain: life_productivity
+triggers:
+  - type: cli
+    command: flowforge run decision
+  - type: schedule
+    cron: null
+  - type: im
+    providers: [feishu]
+    optional: true
+
+context:
+  vault_profile: default
+  offline_only: false
+  budget_ceiling: null
+
+budget:
+  max_tool_steps: 60
+  max_review_retries: 2
+  token_soft_limit: 120000
+
+stages:
+  - id: clarify
+    agent: clarifier
+    hooks:
+      - before_clarify: [inject_l0_profile, inject_skill_index]
+      - after_clarify: [validate_brief_schema]
+    artifacts:
+      required:
+        - path: artifacts/brief.md
+          schema: brief_v1
+    gates:
+      - id: goal_confirmed
+        type: human
+        skippable: false
+
+  - id: gather
+    agent: researcher
+    depends_on: [clarify]
+    hooks:
+      - before_gather: [inject_l1_decision_skill]
+      - after_gather: [dedupe_sources, min_sources_check]
+    artifacts:
+      required:
+        - path: artifacts/sources.json
+          schema: sources_v1
+    gates: []
+
+  - id: synthesize
+    agent: analyst
+    depends_on: [gather]
+    hooks:
+      - before_synthesize: [inject_l2_prior_decisions]
+    artifacts:
+      required:
+        - path: artifacts/comparison.md
+        - path: artifacts/decision-matrix.json
+          schema: matrix_v1
+    gates: []
+
+  - id: decide
+    agent: analyst
+    depends_on: [synthesize]
+    hooks:
+      - before_decide: [enforce_budget_ceiling]
+    artifacts:
+      required:
+        - path: artifacts/recommendation.md
+    gates:
+      - id: decision_confirmed
+        type: human
+        skippable: false
+
+  - id: execute
+    agent: executor
+    depends_on: [decide]
+    sandbox:
+      allowed_tools:
+        - vault_search
+        - vault_read
+        - write_artifact
+        - draft_message
+        - export_ics
+    artifacts:
+      required:
+        - path: artifacts/action-checklist.md
+          schema: checklist_v1
+      optional:
+        - path: artifacts/drafts/message.txt
+        - path: artifacts/calendar-draft.ics
+    gates: []
+
+  - id: review
+    agent: reviewer
+    depends_on: [execute]
+    hooks:
+      - after_review: [archive_to_vault]
+    artifacts:
+      required:
+        - path: artifacts/review-report.json
+        - path: artifacts/decision-record.md
+    gates:
+      - id: review_passed
+        type: automatic
+        condition: "artifacts.review-report.json.passed == true"
+
+plugins:
+  - name: vault_fts
+    provides: [vault_search, vault_read, archive_to_vault]
+  - name: web_search
+    provides: [web_search]
+    optional: true
+  - name: feishu_notify
+    provides: [draft_message]
+    optional: true
+
+observability:
+  trace: true
+  run_store: runs/{run_id}/

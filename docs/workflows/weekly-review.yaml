@@ -1,0 +1,91 @@
+# FlowForge WeeklyReviewFlow — 周复盘与下周计划
+# 用法: flowforge run weekly-review
+
+name: weekly-review
+version: "1.0"
+description: 拉取本周记录 → 总结 → 定下周 Top3 → 生成清单与可选日历草稿
+
+domain: life_productivity
+triggers:
+  - type: cli
+    command: flowforge run weekly-review
+  - type: schedule
+    cron: "0 20 * * 0"
+    timezone: Asia/Shanghai
+
+context:
+  vault_profile: default
+  lookback_days: 7
+
+budget:
+  max_tool_steps: 40
+  token_soft_limit: 80000
+
+stages:
+  - id: clarify
+    agent: clarifier
+    artifacts:
+      required:
+        - path: artifacts/week-scope.md
+    gates: []
+
+  - id: gather
+    agent: researcher
+    depends_on: [clarify]
+    hooks:
+      - before_gather: [vault_search_recent_notes]
+    artifacts:
+      required:
+        - path: artifacts/raw-notes-index.json
+    gates: []
+
+  - id: synthesize
+    agent: analyst
+    depends_on: [gather]
+    artifacts:
+      required:
+        - path: artifacts/week-summary.md
+    gates: []
+
+  - id: decide
+    agent: analyst
+    depends_on: [synthesize]
+    artifacts:
+      required:
+        - path: artifacts/next-week-priorities.json
+          schema: priorities_v1
+    gates:
+      - id: priorities_confirmed
+        type: human
+        skippable: true
+
+  - id: execute
+    agent: executor
+    depends_on: [decide]
+    artifacts:
+      required:
+        - path: artifacts/action-checklist.md
+      optional:
+        - path: artifacts/calendar-draft.ics
+    gates: []
+
+  - id: review
+    agent: reviewer
+    depends_on: [execute]
+    hooks:
+      - after_review: [archive_to_vault]
+    artifacts:
+      required:
+        - path: artifacts/decision-record.md
+    gates:
+      - id: review_passed
+        type: automatic
+        condition: "artifacts.action-checklist.md.items.length >= 1"
+
+plugins:
+  - name: vault_fts
+    provides: [vault_search_recent_notes, archive_to_vault]
+
+observability:
+  trace: true
+  run_store: runs/{run_id}/

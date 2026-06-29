@@ -1,0 +1,47 @@
+# 微电影经济档 — 部分镜头万相 flash，其余 Ken Burns
+name: micro-movie-economy
+version: "1.0"
+description: 微电影省钱档；约 6 镜万相 i2v + Ken Burns
+
+target_duration_sec: 150
+cost_budget_cny: 35
+
+llm:
+  planner:    { provider: deepseek, model: deepseek-v4-flash }
+  writer:     { provider: deepseek, model: deepseek-v4-flash }
+  continuity: { provider: deepseek, model: deepseek-v4-flash }
+  storyboard: { provider: deepseek, model: deepseek-v4-flash }
+  compliance: { provider: deepseek, model: deepseek-v4-flash }
+
+tts:
+  provider: volcengine
+  product: doubao-speech-2.0-emotion
+
+image:
+  provider: bailian
+  model: wan2.6-t2i
+  aspect_ratio: "9:16"
+  resolution: "1080x1920"
+
+video:
+  enabled: true
+  provider: bailian
+  strategy: image2video
+  model: wan2.6-i2v-flash
+  resolution: "720P"
+  silent_audio: true
+  all_shots: false
+  require_video: false
+  max_clips: 8
+  clip_duration_sec: 5
+
+compose:
+  clip_crossfade_sec: 0.45
+  bgm_enabled: true
+
+unit_prices_cny:
+  video_per_second: 0.10
+  image_per_shot: 0.20
+
+cost_targets_cny:
+  total: [20, 35]

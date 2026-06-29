@@ -1,0 +1,7 @@
+# Custom compliance blacklist — one term per line.
+# Prefix warn: for warning-only (does not block publish).
+# Prefix block: is optional (default severity is block).
+
+# Example test word — remove or replace in production.
+block:赌博
+warn:香烟
