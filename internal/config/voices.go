@@ -36,7 +36,7 @@ var voicePresets = map[string]VoicePreset{
 
 		VoiceID:     "zh_male_m191_uranus_bigtts",
 
-		SpeedRatio:  1.0,
+		SpeedRatio:  0.85,
 
 	},
 
